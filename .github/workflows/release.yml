@@ -1,0 +1,22 @@
+name: Build Release ZIP
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create plugin ZIP
+        run: |
+          mkdir -p build/wp-2-tncms
+          rsync -av --exclude='.git' --exclude='.github' --exclude='build' --exclude='vendor' ./ build/wp-2-tncms/
+          cd build
+          zip -r wp-2-tncms-${GITHUB_REF_NAME}.zip wp-2-tncms
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wp-2-tncms-${{ github.ref_name }}
+          path: build/wp-2-tncms-${{ github.ref_name }}.zip

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ruleset name="WP 2 TNCMS">
+  <description>WordPress Coding Standards for WP 2 TNCMS.</description>
+
+  <file>wp-2-tncms.php</file>
+  <file>includes</file>
+
+  <exclude-pattern>vendor/*</exclude-pattern>
+  <exclude-pattern>tests/*</exclude-pattern>
+
+  <rule ref="WordPress"/>
+  <rule ref="WordPress-Docs"/>
+  <rule ref="WordPress-Extra"/>
+
+  <config name="testVersion" value="8.1-"/>
+</ruleset>
