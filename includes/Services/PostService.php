@@ -7,6 +7,7 @@
 
 namespace WP2TNCMS\Services;
 
+use WP2TNCMS\Support\LookupIndex;
 use WP_Post;
 use WP_Query;
 
@@ -135,6 +136,130 @@ final class PostService {
 		$post = get_post( (int) $id );
 
 		if ( ! $post instanceof WP_Post || $post->post_type !== $post_type ) {
+			return null;
+		}
+
+		if ( ! in_array( $post->post_status, $this->exportable_statuses(), true ) ) {
+			return null;
+		}
+
+		return $post;
+	}
+
+	/**
+	 * Find a single post of a given type by slug (post_name).
+	 *
+	 * @param string $post_type Post type slug.
+	 * @param string $slug      Post slug.
+	 * @return WP_Post|null
+	 */
+	public function find_by_slug( $post_type, $slug ) {
+		$slug = sanitize_title( (string) $slug );
+
+		if ( '' === $slug ) {
+			return null;
+		}
+
+		$query = new WP_Query(
+			array(
+				'post_type'              => $post_type,
+				'name'                   => $slug,
+				'post_status'            => $this->exportable_statuses(),
+				'posts_per_page'         => 1,
+				'ignore_sticky_posts'    => true,
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false,
+			)
+		);
+
+		return empty( $query->posts ) ? null : $query->posts[0];
+	}
+
+	/**
+	 * Find a single post of a given type by exported content hash.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @param string $hash      SHA-256 content hash.
+	 * @return WP_Post|null
+	 */
+	public function find_by_content_hash( $post_type, $hash ) {
+		return $this->find_by_hash_meta( $post_type, LookupIndex::META_CONTENT_HASH, $hash );
+	}
+
+	/**
+	 * Find a single post of a given type by exported payload hash.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @param string $hash      SHA-256 payload hash.
+	 * @return WP_Post|null
+	 */
+	public function find_by_payload_hash( $post_type, $hash ) {
+		return $this->find_by_hash_meta( $post_type, LookupIndex::META_PAYLOAD_HASH, $hash );
+	}
+
+	/**
+	 * Resolve a post by a hash stored in the lookup index meta.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @param string $meta_key  Index meta key.
+	 * @param string $hash      Hash value.
+	 * @return WP_Post|null
+	 */
+	private function find_by_hash_meta( $post_type, $meta_key, $hash ) {
+		$hash = strtolower( trim( (string) $hash ) );
+
+		if ( '' === $hash ) {
+			return null;
+		}
+
+		$query = new WP_Query(
+			array(
+				'post_type'              => $post_type,
+				'post_status'            => $this->exportable_statuses(),
+				'posts_per_page'         => 1,
+				'ignore_sticky_posts'    => true,
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false,
+				'meta_query'             => array(
+					array(
+						'key'   => $meta_key,
+						'value' => $hash,
+					),
+				),
+			)
+		);
+
+		return empty( $query->posts ) ? null : $query->posts[0];
+	}
+
+	/**
+	 * Resolve an exportable post by its canonical permalink.
+	 *
+	 * Uses WordPress' own permalink resolution so any permalink structure is
+	 * supported. The post type is not constrained here; callers validate the
+	 * resolved post type when required.
+	 *
+	 * @param string $url Canonical URL.
+	 * @return WP_Post|null
+	 */
+	public function find_by_url( $url ) {
+		$url = trim( (string) $url );
+
+		if ( '' === $url ) {
+			return null;
+		}
+
+		$id = url_to_postid( $url );
+
+		if ( $id < 1 ) {
+			return null;
+		}
+
+		$post = get_post( $id );
+
+		if ( ! $post instanceof WP_Post ) {
 			return null;
 		}
 

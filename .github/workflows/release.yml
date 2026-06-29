@@ -4,19 +4,66 @@ on:
   push:
     tags:
       - 'v*'
+  # Allow building a ZIP on demand without tagging (artifact only, no release).
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create plugin ZIP
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           mkdir -p build/wp-2-tncms
-          rsync -av --exclude='.git' --exclude='.github' --exclude='build' --exclude='vendor' ./ build/wp-2-tncms/
+          # The plugin ships a self-contained PSR-4 spl_autoload_register, so no
+          # composer vendor/ is needed at runtime. Exclude all dev/build/CI files.
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='.gitattributes' \
+            --exclude='vendor' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='build' \
+            --exclude='dist' \
+            --exclude='composer.lock' \
+            --exclude='phpstan.neon' \
+            --exclude='phpcs.xml' \
+            ./ build/wp-2-tncms/
           cd build
-          zip -r wp-2-tncms-${GITHUB_REF_NAME}.zip wp-2-tncms
-      - uses: actions/upload-artifact@v4
+          zip -r "wp-2-tncms-${VERSION}.zip" wp-2-tncms
+          echo "--- ZIP contents (top level) ---"
+          unzip -l "wp-2-tncms-${VERSION}.zip" | head -40
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: wp-2-tncms-${{ github.ref_name }}
-          path: build/wp-2-tncms-${{ github.ref_name }}.zip
+          name: wp-2-tncms-${{ steps.version.outputs.version }}
+          path: build/wp-2-tncms-${{ steps.version.outputs.version }}.zip
+
+      - name: Publish GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "${VERSION}" \
+            "build/wp-2-tncms-${VERSION}.zip" \
+            --title "WP 2 TNCMS ${VERSION}" \
+            --generate-notes

@@ -26,22 +26,22 @@ abstract class AbstractSeoAdapter implements SeoAdapterInterface {
 	 */
 	protected function empty_seo() {
 		return array(
-			'provider'       => $this->get_slug(),
-			'title'          => '',
-			'description'    => '',
-			'focus_keyword'  => '',
-			'canonical'      => '',
-			'robots'         => array(
+			'provider'      => $this->get_slug(),
+			'title'         => '',
+			'description'   => '',
+			'focus_keyword' => '',
+			'canonical'     => '',
+			'robots'        => array(
 				'index'    => null,
 				'follow'   => null,
 				'advanced' => array(),
 			),
-			'open_graph'     => array(
+			'open_graph'    => array(
 				'title'       => '',
 				'description' => '',
 				'image'       => '',
 			),
-			'twitter'        => array(
+			'twitter'       => array(
 				'title'       => '',
 				'description' => '',
 				'image'       => '',

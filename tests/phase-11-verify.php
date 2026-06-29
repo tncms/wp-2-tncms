@@ -70,7 +70,7 @@ w2t_assert( 'GET /health still public 200', 200 === $status );
 echo "\n== 2. Manifest includes schema_version 1.1 + new blocks ==\n";
 list( $status, $manifest ) = w2t_call( 'GET', "{$ns}/manifest", $token );
 w2t_assert( 'manifest 200', 200 === $status );
-w2t_assert( 'schema_version = 1.1', isset( $manifest['schema_version'] ) && '1.1' === $manifest['schema_version'] );
+w2t_assert( 'schema_version >= 1.1', isset( $manifest['schema_version'] ) && version_compare( $manifest['schema_version'], '1.1', '>=' ) );
 w2t_assert( 'manifest has generated_at', ! empty( $manifest['generated_at'] ) );
 w2t_assert( 'manifest has site.upload_base_url', isset( $manifest['site']['upload_base_url'] ) );
 w2t_assert( 'manifest has counts.posts.total', isset( $manifest['counts']['posts']['total'] ) );

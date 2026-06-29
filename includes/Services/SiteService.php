@@ -52,24 +52,24 @@ final class SiteService {
 		$uploads = wp_get_upload_dir();
 
 		return array(
-			'name'           => get_bloginfo( 'name' ),
-			'description'    => get_bloginfo( 'description' ),
-			'url'            => home_url(),
-			'admin_url'      => admin_url(),
-			'language'       => get_bloginfo( 'language' ),
-			'charset'        => get_bloginfo( 'charset' ),
-			'timezone'       => wp_timezone_string(),
-			'versions'       => array(
+			'name'            => get_bloginfo( 'name' ),
+			'description'     => get_bloginfo( 'description' ),
+			'url'             => home_url(),
+			'admin_url'       => admin_url(),
+			'language'        => get_bloginfo( 'language' ),
+			'charset'         => get_bloginfo( 'charset' ),
+			'timezone'        => wp_timezone_string(),
+			'versions'        => array(
 				'wordpress' => get_bloginfo( 'version' ),
 				'php'       => PHP_VERSION,
 				'plugin'    => WP2TNCMS_VERSION,
 			),
 			'upload_base_url' => isset( $uploads['baseurl'] ) ? $uploads['baseurl'] : '',
-			'counts'         => $this->counts(),
-			'capabilities'   => array(
+			'counts'          => $this->counts(),
+			'capabilities'    => array(
 				'seo_provider' => $this->seo->provider(),
 			),
-			'api'            => array(
+			'api'             => array(
 				'namespace' => WP2TNCMS_REST_NAMESPACE,
 				'version'   => 'v1',
 			),

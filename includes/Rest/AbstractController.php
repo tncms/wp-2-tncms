@@ -11,6 +11,7 @@ use WP2TNCMS\Support\CollectionQuery;
 use WP2TNCMS\Support\Pagination;
 use WP2TNCMS\Support\Response;
 use WP_REST_Request;
+use WP_REST_Response;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -74,5 +75,27 @@ abstract class AbstractController {
 		);
 
 		return Response::collection( $items, $pagination );
+	}
+
+	/**
+	 * Whether the incoming request is a HEAD request.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return bool
+	 */
+	protected function is_head( WP_REST_Request $request ) {
+		return 'HEAD' === strtoupper( (string) $request->get_method() );
+	}
+
+	/**
+	 * Build an empty 200 response for a HEAD request.
+	 *
+	 * Lets single-resource handlers confirm existence and return headers only,
+	 * skipping payload transformation (and any file hashing) for HEAD probes.
+	 *
+	 * @return WP_REST_Response
+	 */
+	protected function head_ok() {
+		return new WP_REST_Response( null, 200 );
 	}
 }

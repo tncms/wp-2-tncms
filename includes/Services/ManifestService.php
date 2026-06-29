@@ -62,12 +62,12 @@ final class ManifestService {
 	 */
 	public function import_strategy() {
 		return array(
-			'recommended_order'    => array( 'users', 'terms', 'media', 'posts', 'pages' ),
-			'safe_resume'          => true,
-			'dedupe_key'           => 'source.key',
-			'media_skip_strategy'  => 'relative_path+filesize+checksum',
+			'recommended_order'     => array( 'users', 'terms', 'media', 'posts', 'pages' ),
+			'safe_resume'           => true,
+			'dedupe_key'            => 'source.key',
+			'media_skip_strategy'   => 'relative_path+filesize+checksum',
 			'content_scan_required' => false,
-			'recommended_per_page' => array(
+			'recommended_per_page'  => array(
 				'users' => 100,
 				'terms' => 100,
 				'media' => 50,

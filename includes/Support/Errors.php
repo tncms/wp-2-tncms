@@ -79,4 +79,18 @@ final class Errors {
 			404
 		);
 	}
+
+	/**
+	 * 422 - the supplied identifier was malformed or unusable.
+	 *
+	 * @param string $message Optional custom message.
+	 * @return WP_Error
+	 */
+	public static function validation( $message = '' ) {
+		return self::make(
+			self::VALIDATION,
+			'' !== $message ? $message : __( 'The supplied identifier was invalid.', 'wp-2-tncms' ),
+			422
+		);
+	}
 }

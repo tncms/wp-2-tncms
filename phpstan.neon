@@ -5,4 +5,17 @@ parameters:
     - wp-2-tncms.php
   excludePaths:
     - vendor
-  checkMissingIterableValueType: false
+  # PHPDoc annotations are advisory, not runtime guarantees. This plugin keeps
+  # defensive guards (is_string() on request headers, instanceof checks on
+  # WordPress core return values and `apply_filters` hook results that third
+  # parties control) even where a @param/@return annotation claims a narrower
+  # type. Without this, PHPStan reports those guards as "always true" and would
+  # pressure us to delete safety checks at trust boundaries. Disabling it keeps
+  # the guards while still surfacing genuinely impossible conditions.
+  treatPhpDocTypesAsCertain: false
+  # WordPress core symbols (functions, classes, constants) are provided by
+  # php-stubs/wordpress-stubs, wired up through szepeviktor/phpstan-wordpress.
+  # The extension is auto-registered via phpstan/extension-installer, so no
+  # manual `includes:` of the extension.neon is required here.
+  bootstrapFiles:
+    - tests/phpstan-bootstrap.php
