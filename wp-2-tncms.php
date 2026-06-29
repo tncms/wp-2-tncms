@@ -3,7 +3,7 @@
  * Plugin Name:       WP 2 TNCMS Exporter
  * Plugin URI:        https://thenguyen.dev/wp-2-tncms
  * Description:       Official, export-only companion plugin for migrating WordPress content to TNCMS. Exposes a stable, versioned, read-only REST API.
- * Version:           1.0.0
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
  * Author:            TNCMS
@@ -24,7 +24,7 @@ if ( defined( 'WP2TNCMS_VERSION' ) ) {
 	return;
 }
 
-define( 'WP2TNCMS_VERSION', '1.0.0' );
+define( 'WP2TNCMS_VERSION', '1.2.0' );
 define( 'WP2TNCMS_FILE', __FILE__ );
 define( 'WP2TNCMS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WP2TNCMS_BASENAME', plugin_basename( __FILE__ ) );

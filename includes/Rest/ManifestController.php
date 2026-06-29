@@ -22,7 +22,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Lets a client discover the available resources, counts, pagination defaults,
  * deduplication capabilities and the recommended import strategy without
  * hard-coding them. Schema version 1.1 adds counts, import order/strategy,
- * resume and dedupe metadata; all original fields are preserved.
+ * resume and dedupe metadata. Schema version 1.2 advertises the additive
+ * Resource Lookup API (lookup/resolve/search and per-resource lookups). All
+ * original fields are preserved.
  */
 final class ManifestController extends AbstractController {
 
@@ -57,7 +59,7 @@ final class ManifestController extends AbstractController {
 				'plugin'          => 'wp-2-tncms',
 				'version'         => WP2TNCMS_VERSION,
 				'api_version'     => 'v1',
-				'schema_version'  => '1.1',
+				'schema_version'  => '1.2',
 				'generated_at'    => gmdate( 'c' ),
 				'namespace'       => WP2TNCMS_REST_NAMESPACE,
 				'site'            => array(
@@ -91,6 +93,22 @@ final class ManifestController extends AbstractController {
 					'checksum'              => 'sha256',
 					'content_scan_required' => false,
 				),
+				'lookup'          => array(
+					'supported'  => true,
+					'endpoints'  => array( 'lookup', 'resolve', 'search' ),
+					'dimensions' => array(
+						'posts' => array( 'id', 'slug', 'key', 'hash', 'url' ),
+						'pages' => array( 'id', 'slug', 'key', 'hash', 'url' ),
+						'terms' => array( 'id', 'taxonomy+id', 'taxonomy+slug', 'key' ),
+						'media' => array( 'id', 'path', 'checksum', 'key' ),
+						'users' => array( 'id', 'login', 'key' ),
+					),
+					'search'     => array(
+						'types'         => array( 'post', 'page', 'media', 'term', 'user' ),
+						'default_limit' => 20,
+						'max_limit'     => 100,
+					),
+				),
 				'import_strategy' => $this->service->import_strategy(),
 			)
 		);
@@ -103,7 +121,7 @@ final class ManifestController extends AbstractController {
 	 * @return array
 	 */
 	private function resources( $base ) {
-		$protected = array( 'manifest', 'site', 'users', 'terms', 'media', 'posts', 'pages', 'dependencies' );
+		$protected = array( 'manifest', 'site', 'users', 'terms', 'media', 'posts', 'pages', 'dependencies', 'lookup', 'resolve', 'search' );
 		$resources = array(
 			array(
 				'name'      => 'health',

@@ -74,4 +74,40 @@ final class UserService {
 
 		return $user instanceof WP_User ? $user : null;
 	}
+
+	/**
+	 * Find a single user by login name.
+	 *
+	 * @param string $login User login.
+	 * @return WP_User|null
+	 */
+	public function find_by_login( $login ) {
+		$login = trim( (string) $login );
+
+		if ( '' === $login ) {
+			return null;
+		}
+
+		$user = get_user_by( 'login', $login );
+
+		return $user instanceof WP_User ? $user : null;
+	}
+
+	/**
+	 * Find a single user by slug (user_nicename).
+	 *
+	 * @param string $slug User nicename.
+	 * @return WP_User|null
+	 */
+	public function find_by_slug( $slug ) {
+		$slug = sanitize_title( (string) $slug );
+
+		if ( '' === $slug ) {
+			return null;
+		}
+
+		$user = get_user_by( 'slug', $slug );
+
+		return $user instanceof WP_User ? $user : null;
+	}
 }

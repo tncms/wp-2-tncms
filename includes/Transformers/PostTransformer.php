@@ -74,10 +74,13 @@ class PostTransformer {
 		);
 
 		if ( 'summary' === $fields ) {
-			return array_merge( $this->summary( $post, $full ), array(
-				'source' => $source,
-				'hashes' => $hashes,
-			) );
+			return array_merge(
+				$this->summary( $post, $full ),
+				array(
+					'source' => $source,
+					'hashes' => $hashes,
+				)
+			);
 		}
 
 		return array_merge(

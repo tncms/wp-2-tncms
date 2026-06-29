@@ -106,4 +106,62 @@ final class TermService {
 
 		return in_array( $term->taxonomy, $this->taxonomies(), true ) ? $term : null;
 	}
+
+	/**
+	 * Find a term by ID, constrained to a specific exported taxonomy.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @param int    $id       Term ID.
+	 * @return WP_Term|null
+	 */
+	public function find_in_taxonomy( $taxonomy, $id ) {
+		if ( ! in_array( $taxonomy, $this->taxonomies(), true ) ) {
+			return null;
+		}
+
+		$term = get_term( (int) $id, $taxonomy );
+
+		return $term instanceof WP_Term ? $term : null;
+	}
+
+	/**
+	 * Find a term by slug within a specific exported taxonomy.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @param string $slug     Term slug.
+	 * @return WP_Term|null
+	 */
+	public function find_by_slug( $taxonomy, $slug ) {
+		if ( ! in_array( $taxonomy, $this->taxonomies(), true ) ) {
+			return null;
+		}
+
+		$slug = sanitize_title( (string) $slug );
+
+		if ( '' === $slug ) {
+			return null;
+		}
+
+		$term = get_term_by( 'slug', $slug, $taxonomy );
+
+		return $term instanceof WP_Term ? $term : null;
+	}
+
+	/**
+	 * Find a term by slug across all exported taxonomies.
+	 *
+	 * @param string $slug Term slug.
+	 * @return WP_Term|null
+	 */
+	public function find_by_slug_any( $slug ) {
+		foreach ( $this->taxonomies() as $taxonomy ) {
+			$term = $this->find_by_slug( $taxonomy, $slug );
+
+			if ( null !== $term ) {
+				return $term;
+			}
+		}
+
+		return null;
+	}
 }

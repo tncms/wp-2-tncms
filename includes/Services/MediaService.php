@@ -7,6 +7,7 @@
 
 namespace WP2TNCMS\Services;
 
+use WP2TNCMS\Support\LookupIndex;
 use WP_Post;
 use WP_Query;
 
@@ -96,5 +97,78 @@ final class MediaService {
 		}
 
 		return $post;
+	}
+
+	/**
+	 * Find an attachment by its exported relative upload path.
+	 *
+	 * The path is matched against the original `_wp_attached_file` meta value
+	 * (e.g. `2026/05/image.png`); only relative paths are accepted so absolute
+	 * filesystem paths are never exposed.
+	 *
+	 * @param string $relative_path Relative upload path.
+	 * @return WP_Post|null
+	 */
+	public function find_by_relative_path( $relative_path ) {
+		$relative_path = ltrim( (string) $relative_path, '/' );
+
+		if ( '' === $relative_path ) {
+			return null;
+		}
+
+		$query = new WP_Query(
+			array(
+				'post_type'              => 'attachment',
+				'post_status'            => 'inherit',
+				'posts_per_page'         => 1,
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false,
+				'meta_query'             => array(
+					array(
+						'key'   => '_wp_attached_file',
+						'value' => $relative_path,
+					),
+				),
+			)
+		);
+
+		return empty( $query->posts ) ? null : $query->posts[0];
+	}
+
+	/**
+	 * Find an attachment by its exported SHA-256 file checksum.
+	 *
+	 * Resolves against the lookup index that is populated when media is
+	 * exported, so the checksum is returned when available.
+	 *
+	 * @param string $checksum SHA-256 checksum.
+	 * @return WP_Post|null
+	 */
+	public function find_by_checksum( $checksum ) {
+		$checksum = strtolower( trim( (string) $checksum ) );
+
+		if ( '' === $checksum ) {
+			return null;
+		}
+
+		$query = new WP_Query(
+			array(
+				'post_type'              => 'attachment',
+				'post_status'            => 'inherit',
+				'posts_per_page'         => 1,
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+				'update_post_meta_cache' => false,
+				'meta_query'             => array(
+					array(
+						'key'   => LookupIndex::META_CHECKSUM,
+						'value' => $checksum,
+					),
+				),
+			)
+		);
+
+		return empty( $query->posts ) ? null : $query->posts[0];
 	}
 }
