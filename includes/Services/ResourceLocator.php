@@ -9,6 +9,7 @@ namespace WP2TNCMS\Services;
 
 use WP2TNCMS\Support\SourceKey;
 use WP2TNCMS\Transformers\MediaTransformer;
+use WP2TNCMS\Transformers\MenuTransformer;
 use WP2TNCMS\Transformers\PageTransformer;
 use WP2TNCMS\Transformers\PostTransformer;
 use WP2TNCMS\Transformers\TermTransformer;
@@ -61,6 +62,13 @@ final class ResourceLocator {
 	private $users;
 
 	/**
+	 * Menu service.
+	 *
+	 * @var MenuService
+	 */
+	private $menus;
+
+	/**
 	 * Post transformer.
 	 *
 	 * @var PostTransformer
@@ -96,38 +104,51 @@ final class ResourceLocator {
 	private $user_transformer;
 
 	/**
+	 * Menu transformer.
+	 *
+	 * @var MenuTransformer
+	 */
+	private $menu_transformer;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param PostService      $posts             Post service.
 	 * @param MediaService     $media             Media service.
 	 * @param TermService      $terms             Term service.
 	 * @param UserService      $users             User service.
+	 * @param MenuService      $menus             Menu service.
 	 * @param PostTransformer  $post_transformer  Post transformer.
 	 * @param PageTransformer  $page_transformer  Page transformer.
 	 * @param MediaTransformer $media_transformer Media transformer.
 	 * @param TermTransformer  $term_transformer  Term transformer.
 	 * @param UserTransformer  $user_transformer  User transformer.
+	 * @param MenuTransformer  $menu_transformer  Menu transformer.
 	 */
 	public function __construct(
 		PostService $posts,
 		MediaService $media,
 		TermService $terms,
 		UserService $users,
+		MenuService $menus,
 		PostTransformer $post_transformer,
 		PageTransformer $page_transformer,
 		MediaTransformer $media_transformer,
 		TermTransformer $term_transformer,
-		UserTransformer $user_transformer
+		UserTransformer $user_transformer,
+		MenuTransformer $menu_transformer
 	) {
 		$this->posts             = $posts;
 		$this->media             = $media;
 		$this->terms             = $terms;
 		$this->users             = $users;
+		$this->menus             = $menus;
 		$this->post_transformer  = $post_transformer;
 		$this->page_transformer  = $page_transformer;
 		$this->media_transformer = $media_transformer;
 		$this->term_transformer  = $term_transformer;
 		$this->user_transformer  = $user_transformer;
+		$this->menu_transformer  = $menu_transformer;
 	}
 
 	/**
@@ -167,6 +188,8 @@ final class ResourceLocator {
 				return $this->wrap( 'user', $this->users->find( $id ) );
 			case 'term':
 				return $this->wrap( 'term', $this->terms->find( $id ) );
+			case 'menu':
+				return $this->wrap( 'menu', $this->menus->find( $id ) );
 		}
 
 		return null;
@@ -193,6 +216,8 @@ final class ResourceLocator {
 					? $this->terms->find_by_slug( $taxonomy, $slug )
 					: $this->terms->find_by_slug_any( $slug );
 				return $this->wrap( 'term', $term );
+			case 'menu':
+				return $this->wrap( 'menu', $this->menus->find_by_slug( $slug ) );
 		}
 
 		return null;
@@ -291,6 +316,9 @@ final class ResourceLocator {
 				break;
 			case 'user':
 				$data = $this->user_transformer->transform( $object );
+				break;
+			case 'menu':
+				$data = $this->menu_transformer->transform( $object );
 				break;
 			default:
 				return null;

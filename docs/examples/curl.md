@@ -84,6 +84,30 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
   "https://example.com/wp-json/wp-2-tncms/v1/users/key/wordpress:user:1"
 ```
 
+## Menus
+
+```bash
+# Collection of menu summaries
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  "https://example.com/wp-json/wp-2-tncms/v1/menus?page=1&per_page=20"
+
+# Full menu (with recursive item tree) by id
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  "https://example.com/wp-json/wp-2-tncms/v1/menus/12"
+
+# By slug
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  "https://example.com/wp-json/wp-2-tncms/v1/menus/slug/primary-menu"
+
+# By theme location
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  "https://example.com/wp-json/wp-2-tncms/v1/menus/location/primary"
+
+# Cross-resource lookup by source key
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  "https://example.com/wp-json/wp-2-tncms/v1/lookup?key=wordpress:menu:12"
+```
+
 ## Cross-resource: lookup
 
 ```bash

@@ -52,6 +52,7 @@ final class ManifestService {
 			'media' => $this->attachment_count(),
 			'posts' => $this->post_counts( 'post' ),
 			'pages' => $this->post_counts( 'page' ),
+			'menus' => $this->menu_count(),
 		);
 	}
 
@@ -62,7 +63,7 @@ final class ManifestService {
 	 */
 	public function import_strategy() {
 		return array(
-			'recommended_order'     => array( 'users', 'terms', 'media', 'posts', 'pages' ),
+			'recommended_order'     => array( 'users', 'terms', 'media', 'posts', 'pages', 'menus' ),
 			'safe_resume'           => true,
 			'dedupe_key'            => 'source.key',
 			'media_skip_strategy'   => 'relative_path+filesize+checksum',
@@ -73,6 +74,7 @@ final class ManifestService {
 				'media' => 50,
 				'posts' => 20,
 				'pages' => 20,
+				'menus' => 50,
 			),
 		);
 	}
@@ -97,6 +99,22 @@ final class ManifestService {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Count of navigation menus.
+	 *
+	 * @return int
+	 */
+	private function menu_count() {
+		$count = wp_count_terms(
+			array(
+				'taxonomy'   => 'nav_menu',
+				'hide_empty' => false,
+			)
+		);
+
+		return is_wp_error( $count ) ? 0 : (int) $count;
 	}
 
 	/**

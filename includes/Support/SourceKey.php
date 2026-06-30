@@ -56,7 +56,7 @@ final class SourceKey {
 	 * @return string[]
 	 */
 	public static function resources() {
-		return array( 'post', 'page', 'media', 'user', 'term' );
+		return array( 'post', 'page', 'media', 'user', 'term', 'menu' );
 	}
 
 	/**

@@ -12,6 +12,7 @@ use WP2TNCMS\Services\DependencyService;
 use WP2TNCMS\Services\ManifestService;
 use WP2TNCMS\Services\MediaReferenceResolver;
 use WP2TNCMS\Services\MediaService;
+use WP2TNCMS\Services\MenuService;
 use WP2TNCMS\Services\PostService;
 use WP2TNCMS\Services\ResourceLocator;
 use WP2TNCMS\Services\SearchService;
@@ -21,6 +22,7 @@ use WP2TNCMS\Services\TermService;
 use WP2TNCMS\Services\UserService;
 use WP2TNCMS\Support\Pagination;
 use WP2TNCMS\Transformers\MediaTransformer;
+use WP2TNCMS\Transformers\MenuTransformer;
 use WP2TNCMS\Transformers\PageTransformer;
 use WP2TNCMS\Transformers\PostTransformer;
 use WP2TNCMS\Transformers\SiteTransformer;
@@ -69,22 +71,26 @@ final class Router {
 		$media_service     = new MediaService();
 		$term_service      = new TermService();
 		$user_service      = new UserService();
+		$menu_service      = new MenuService();
 		$post_transformer  = new PostTransformer( $seo, $media_refs );
 		$page_transformer  = new PageTransformer( $seo, $media_refs );
 		$media_transformer = new MediaTransformer();
 		$term_transformer  = new TermTransformer();
 		$user_transformer  = new UserTransformer();
+		$menu_transformer  = new MenuTransformer( $menu_service );
 
 		$locator = new ResourceLocator(
 			$post_service,
 			$media_service,
 			$term_service,
 			$user_service,
+			$menu_service,
 			$post_transformer,
 			$page_transformer,
 			$media_transformer,
 			$term_transformer,
-			$user_transformer
+			$user_transformer,
+			$menu_transformer
 		);
 
 		$health   = new HealthController();
@@ -98,6 +104,7 @@ final class Router {
 		$media    = new MediaController( $media_service, $media_transformer );
 		$posts    = new PostsController( $post_service, $post_transformer );
 		$pages    = new PagesController( $post_service, $page_transformer );
+		$menus    = new MenusController( $menu_service, $menu_transformer );
 		$deps     = new DependenciesController( new DependencyService( $post_service, $media_refs ) );
 
 		$lookup  = new LookupController( $locator );
@@ -117,6 +124,7 @@ final class Router {
 		$this->register_collection( $namespace, '/media', $media );
 		$this->register_collection( $namespace, '/posts', $posts );
 		$this->register_collection( $namespace, '/pages', $pages );
+		$this->register_collection( $namespace, '/menus', $menus );
 
 		// Protected lookup routes (additive; collections registered first so
 		// the numeric-id routes keep priority).
@@ -125,6 +133,7 @@ final class Router {
 		$this->register_term_lookups( $namespace, $terms );
 		$this->register_media_lookups( $namespace, $media );
 		$this->register_user_lookups( $namespace, $users );
+		$this->register_menu_lookups( $namespace, $menus );
 
 		// Protected cross-resource endpoints.
 		$this->register_singleton( $namespace, '/lookup', array( $lookup, 'handle' ), null, array( 'GET', 'HEAD' ) );
@@ -187,6 +196,21 @@ final class Router {
 	private function register_user_lookups( $namespace, $controller ) {
 		$this->register_lookup_route( $namespace, '/users/login/(?P<login>[^/]+)', array( $controller, 'show_by_login' ), 'login' );
 		$this->register_lookup_route( $namespace, '/users/key/(?P<source_key>[^/]+)', array( $controller, 'show_by_key' ), 'source_key' );
+	}
+
+	/**
+	 * Register slug/location lookup routes for menus.
+	 *
+	 * The numeric-id route (registered by the collection) only matches digits,
+	 * so the string slug/location routes never collide with it.
+	 *
+	 * @param string          $namespace  REST namespace.
+	 * @param MenusController $controller Menus controller.
+	 * @return void
+	 */
+	private function register_menu_lookups( $namespace, $controller ) {
+		$this->register_lookup_route( $namespace, '/menus/slug/(?P<slug>[^/]+)', array( $controller, 'show_by_slug' ), 'slug' );
+		$this->register_lookup_route( $namespace, '/menus/location/(?P<location>[^/]+)', array( $controller, 'show_by_location' ), 'location' );
 	}
 
 	/**

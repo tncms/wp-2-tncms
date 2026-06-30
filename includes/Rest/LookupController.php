@@ -99,7 +99,7 @@ final class LookupController extends AbstractController {
 	 * @return bool
 	 */
 	private function valid_type( $type ) {
-		return in_array( $type, array( 'post', 'page', 'media', 'user', 'term' ), true );
+		return in_array( $type, array( 'post', 'page', 'media', 'user', 'term', 'menu' ), true );
 	}
 
 	/**

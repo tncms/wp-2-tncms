@@ -2,6 +2,30 @@
 
 All notable changes to WP 2 TNCMS will be documented in this file.
 
+## [1.3.0] - 2026-06-30
+
+### Added
+- Menus export API: `/menus`, `/menus/{id}`, `/menus/slug/{slug}` and
+  `/menus/location/{location}`, all bearer-protected with paginated collections
+  and `HEAD` support on single-menu routes.
+- `MenuService`, `MenuTransformer` and `MenusController` exporting the recursive
+  menu item tree with parent/child hierarchy and original item URLs preserved.
+- Resolved item metadata (`resolved` block with `source_key`) when a menu item
+  points at a post, page or taxonomy term; custom links stay `type=custom`.
+- Menu `url_rewrite_hints` describing how to rewrite the source `site_url`/
+  `home_url` onto the destination application domain (the exporter never
+  rewrites URLs itself).
+- Cross-resource lookup by menu source key (`/lookup?key=wordpress:menu:{id}`);
+  `menu` added to the recognised source-key resources.
+- Manifest **schema version 1.3**: `capabilities.menus`, `counts.menus`, the
+  `menus` entry in `resources`, and `import_strategy.recommended_order` /
+  `import_order` now place menus after posts and pages.
+- Acceptance harness `tests/phase-13-menus-verify.php`.
+
+### Notes
+- Additive only. `api_version` remains `v1`; all existing endpoints and response
+  shapes are unchanged.
+
 ## [1.2.0] - 2026-06-29
 
 ### Added

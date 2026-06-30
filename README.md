@@ -4,7 +4,7 @@ Official WordPress export companion plugin for migrating WordPress content into 
 
 ## Features
 
-- Export users, categories, tags, media, posts and pages.
+- Export users, categories, tags, media, posts, pages and navigation menus.
 - Export SEO metadata from Rank Math, Yoast SEO and All in One SEO.
 - Export original media only, not WordPress-generated thumbnails.
 - Provide checksums, source keys, dependency maps and resume-friendly pagination.
@@ -41,6 +41,7 @@ Protected resources:
 /media
 /posts
 /pages
+/menus
 /dependencies
 ```
 
@@ -88,6 +89,37 @@ GET  /search?q=&type=&limit=          # type: post|page|media|term|user; limit<=
 existing model: `404` not found, `422` invalid identifier, `401` unauthorized,
 `403` exporter disabled.
 
+### Menus API (v1.3)
+
+Export WordPress navigation menus and their item trees. The collection returns
+lightweight menu summaries; every single-menu route returns the full menu with
+its recursive item tree. `HEAD` is supported on the single-menu routes.
+
+```text
+GET  /menus                          # paginated summaries (?page=&per_page=)
+GET  /menus/{id}                     # full menu + item tree
+GET  /menus/slug/{slug}              # full menu by slug
+GET  /menus/location/{location}      # full menu assigned to a theme location
+```
+
+Each menu item preserves the original `url` (the exporter never rewrites URLs),
+its `type`/`object`/`object_id`, and — for items pointing at a post, page or
+taxonomy term — a `resolved` block carrying the canonical `source_key`
+(`wordpress:page:2`, `wordpress:term:5`, …) so the importer can re-link it.
+Custom links stay `type=custom`, `object=custom` with `resolved: null`. The full
+payload also carries `url_rewrite_hints` describing how to rewrite the source
+`site_url`/`home_url` onto the destination application domain.
+
+Menus also participate in the cross-resource lookup:
+
+```text
+GET  /lookup?key=wordpress:menu:{id}
+```
+
+The manifest advertises menus via `capabilities.menus`, `counts.menus`, the
+`menus` entry in `resources`, and an `import_strategy.recommended_order` that
+imports menus after posts and pages.
+
 ## Development
 
 ```bash
@@ -109,8 +141,8 @@ penalised by the legacy file/class-naming sniffs. See
 See [RELEASE.md](RELEASE.md) for the full process. In short, create a Git tag:
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
+git tag v1.3.0
+git push origin v1.3.0
 ```
 
 GitHub Actions builds the installable release ZIP (a `wp-2-tncms/` folder, dev and

@@ -143,7 +143,7 @@ foreach ( array( 'site', 'users', 'terms', 'media', 'posts', 'pages' ) as $r ) {
 list( $status ) = w2t_call( 'GET', "{$ns}/health" );
 w2t_assert( 'GET /health still public 200', 200 === $status );
 list( $status, $manifest ) = w2t_call( 'GET', "{$ns}/manifest", $token );
-w2t_assert( 'manifest schema_version = 1.2', isset( $manifest['schema_version'] ) && '1.2' === $manifest['schema_version'] );
+w2t_assert( 'manifest schema_version >= 1.2', isset( $manifest['schema_version'] ) && version_compare( (string) $manifest['schema_version'], '1.2', '>=' ) );
 w2t_assert( 'manifest api_version = v1', isset( $manifest['api_version'] ) && 'v1' === $manifest['api_version'] );
 w2t_assert( 'manifest advertises lookup', ! empty( $manifest['lookup']['supported'] ) );
 

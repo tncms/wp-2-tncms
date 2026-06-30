@@ -23,8 +23,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * deduplication capabilities and the recommended import strategy without
  * hard-coding them. Schema version 1.1 adds counts, import order/strategy,
  * resume and dedupe metadata. Schema version 1.2 advertises the additive
- * Resource Lookup API (lookup/resolve/search and per-resource lookups). All
- * original fields are preserved.
+ * Resource Lookup API (lookup/resolve/search and per-resource lookups). Schema
+ * version 1.3 adds the menus resource (capabilities.menus, counts.menus and the
+ * menus entry in resources/import order). All original fields are preserved.
  */
 final class ManifestController extends AbstractController {
 
@@ -59,7 +60,7 @@ final class ManifestController extends AbstractController {
 				'plugin'          => 'wp-2-tncms',
 				'version'         => WP2TNCMS_VERSION,
 				'api_version'     => 'v1',
-				'schema_version'  => '1.2',
+				'schema_version'  => '1.3',
 				'generated_at'    => gmdate( 'c' ),
 				'namespace'       => WP2TNCMS_REST_NAMESPACE,
 				'site'            => array(
@@ -75,9 +76,16 @@ final class ManifestController extends AbstractController {
 					'default_per_page' => Pagination::DEFAULT_PER_PAGE,
 					'max_per_page'     => Pagination::MAX_PER_PAGE,
 				),
+				'capabilities'    => array(
+					'lookup'         => true,
+					'search'         => true,
+					'dependencies'   => true,
+					'media_checksum' => true,
+					'menus'          => true,
+				),
 				'counts'          => $this->service->counts(),
 				'resources'       => $this->resources( $base ),
-				'import_order'    => array( 'users', 'terms', 'media', 'posts', 'pages' ),
+				'import_order'    => array( 'users', 'terms', 'media', 'posts', 'pages', 'menus' ),
 				'resume'          => array(
 					'supported'    => true,
 					'strategy'     => 'page+id+modified_gmt',
@@ -102,6 +110,7 @@ final class ManifestController extends AbstractController {
 						'terms' => array( 'id', 'taxonomy+id', 'taxonomy+slug', 'key' ),
 						'media' => array( 'id', 'path', 'checksum', 'key' ),
 						'users' => array( 'id', 'login', 'key' ),
+						'menus' => array( 'id', 'slug', 'location', 'key' ),
 					),
 					'search'     => array(
 						'types'         => array( 'post', 'page', 'media', 'term', 'user' ),
@@ -121,7 +130,7 @@ final class ManifestController extends AbstractController {
 	 * @return array
 	 */
 	private function resources( $base ) {
-		$protected = array( 'manifest', 'site', 'users', 'terms', 'media', 'posts', 'pages', 'dependencies', 'lookup', 'resolve', 'search' );
+		$protected = array( 'manifest', 'site', 'users', 'terms', 'media', 'posts', 'pages', 'menus', 'dependencies', 'lookup', 'resolve', 'search' );
 		$resources = array(
 			array(
 				'name'      => 'health',
