@@ -2,6 +2,32 @@
 
 All notable changes to WP 2 TNCMS will be documented in this file.
 
+## [1.3.1] - 2026-07-01
+
+### Added
+- Posts and pages now embed the featured image as `featured_image`: the full
+  media object produced by the shared `MediaTransformer` (id, original `url`,
+  `relative_path`, `mime_type`, `dimensions`, `filesize`, `checksum`, `alt_text`,
+  `caption`, `description`, `storage`, `source` and `hashes`). Clients no longer
+  need a follow-up `/media/{id}` request to render a post's featured image.
+- Manifest `capabilities.embedded_featured_image` advertises the new field.
+- Acceptance harness `tests/phase-131-featured-image-verify.php`.
+
+### Changed
+- Manifest **schema version 1.3.1** (was `1.3`).
+
+### Performance
+- The collection endpoints prime the featured attachment post + meta caches once
+  per page (`_prime_post_caches`), so embedding each `featured_image` is a cache
+  hit rather than an N+1 attachment query.
+
+### Notes
+- Additive and backward compatible. `api_version` remains `v1`; `featured_media`
+  (the integer attachment ID) is unchanged and all existing response shapes are
+  preserved. `featured_image` is `null` when a post has no featured image.
+  Only the original upload is described — generated thumbnail sizes are never
+  exposed and URLs are never rewritten.
+
 ## [1.3.0] - 2026-06-30
 
 ### Added

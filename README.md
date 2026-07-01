@@ -5,6 +5,8 @@ Official WordPress export companion plugin for migrating WordPress content into 
 ## Features
 
 - Export users, categories, tags, media, posts, pages and navigation menus.
+- Embed the featured image (`featured_image`) directly in post and page payloads
+  so clients skip the extra media lookup; `featured_media` (the ID) is retained.
 - Export SEO metadata from Rank Math, Yoast SEO and All in One SEO.
 - Export original media only, not WordPress-generated thumbnails.
 - Provide checksums, source keys, dependency maps and resume-friendly pagination.
@@ -141,8 +143,8 @@ penalised by the legacy file/class-naming sniffs. See
 See [RELEASE.md](RELEASE.md) for the full process. In short, create a Git tag:
 
 ```bash
-git tag v1.3.0
-git push origin v1.3.0
+git tag v1.3.1
+git push origin v1.3.1
 ```
 
 GitHub Actions builds the installable release ZIP (a `wp-2-tncms/` folder, dev and

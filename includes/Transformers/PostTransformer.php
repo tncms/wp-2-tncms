@@ -26,6 +26,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * and a reserved `meta` object is included for future phases. A stable
  * `source` identity, deduplication `hashes`, resolved `media_refs` and
  * `url_rewrite_hints` are added for the TNCMS importer.
+ *
+ * The featured image is embedded in full (`featured_image`) alongside the
+ * legacy `featured_media` ID so clients avoid a follow-up media lookup. The
+ * embedded object is produced by the shared {@see MediaTransformer}, so it is
+ * byte-for-byte identical to the media endpoint payload.
  */
 class PostTransformer {
 
@@ -44,14 +49,23 @@ class PostTransformer {
 	protected $media_refs;
 
 	/**
+	 * Media transformer used to embed the featured image.
+	 *
+	 * @var MediaTransformer
+	 */
+	protected $media;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param SeoManager             $seo        SEO manager.
 	 * @param MediaReferenceResolver $media_refs Media reference resolver.
+	 * @param MediaTransformer       $media      Media transformer for the featured image.
 	 */
-	public function __construct( SeoManager $seo, MediaReferenceResolver $media_refs ) {
+	public function __construct( SeoManager $seo, MediaReferenceResolver $media_refs, MediaTransformer $media ) {
 		$this->seo        = $seo;
 		$this->media_refs = $media_refs;
+		$this->media      = $media;
 	}
 
 	/**
@@ -113,6 +127,7 @@ class PostTransformer {
 				'guid'              => $post->guid,
 				'author'            => (int) $post->post_author,
 				'featured_media'    => (int) get_post_thumbnail_id( $id ),
+				'featured_image'    => $this->featured_image( $id ),
 				'comment_status'    => $post->comment_status,
 				'ping_status'       => $post->ping_status,
 				'menu_order'        => (int) $post->menu_order,
@@ -145,6 +160,7 @@ class PostTransformer {
 			'guid'           => $full['guid'],
 			'author'         => $full['author'],
 			'featured_media' => $full['featured_media'],
+			'featured_image' => $full['featured_image'],
 			'terms'          => $full['terms'],
 			'media_refs'     => $full['media_refs'],
 			'date_gmt'       => $full['date_gmt'],
@@ -210,5 +226,34 @@ class PostTransformer {
 		}
 
 		return $grouped;
+	}
+
+	/**
+	 * Embed the featured image, or null when the post has none.
+	 *
+	 * The attachment is serialised with the shared {@see MediaTransformer} so
+	 * the embedded object matches the media endpoint exactly; only the original
+	 * upload is described (never a generated thumbnail). Everything is read from
+	 * WordPress internals, so no extra REST request is issued. Attachment post
+	 * and meta caches are primed once per page by the controller, so this stays
+	 * a cache hit rather than an N+1 query.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return array|null
+	 */
+	protected function featured_image( $post_id ) {
+		$attachment_id = (int) get_post_thumbnail_id( $post_id );
+
+		if ( $attachment_id <= 0 ) {
+			return null;
+		}
+
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment instanceof WP_Post || 'attachment' !== $attachment->post_type ) {
+			return null;
+		}
+
+		return $this->media->transform( $attachment );
 	}
 }

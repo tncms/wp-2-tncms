@@ -15,6 +15,16 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
   "https://example.com/wp-json/wp-2-tncms/v1/posts?fields=summary&page=1&per_page=20"
 ```
 
+## Featured image (embedded, no extra media request)
+
+```bash
+# The featured attachment is embedded as `featured_image`; `.featured_media`
+# still returns just the ID. Prefer `featured_image` to avoid a second request.
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  "https://example.com/wp-json/wp-2-tncms/v1/posts/123" \
+  | jq '.data | {featured_media, featured_image}'
+```
+
 ## Posts & pages lookup
 
 ```bash

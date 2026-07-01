@@ -72,9 +72,9 @@ final class Router {
 		$term_service      = new TermService();
 		$user_service      = new UserService();
 		$menu_service      = new MenuService();
-		$post_transformer  = new PostTransformer( $seo, $media_refs );
-		$page_transformer  = new PageTransformer( $seo, $media_refs );
 		$media_transformer = new MediaTransformer();
+		$post_transformer  = new PostTransformer( $seo, $media_refs, $media_transformer );
+		$page_transformer  = new PageTransformer( $seo, $media_refs, $media_transformer );
 		$term_transformer  = new TermTransformer();
 		$user_transformer  = new UserTransformer();
 		$menu_transformer  = new MenuTransformer( $menu_service );

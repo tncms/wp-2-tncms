@@ -187,8 +187,8 @@ w2t_assert( 'GET /health still public 200', 200 === $status );
 
 list( $status, $manifest ) = w2t_call( 'GET', "{$ns}/manifest", $token );
 w2t_assert( 'manifest api_version still v1', isset( $manifest['api_version'] ) && 'v1' === $manifest['api_version'] );
-w2t_assert( 'manifest schema_version = 1.3', isset( $manifest['schema_version'] ) && '1.3' === $manifest['schema_version'] );
-w2t_assert( 'manifest version = 1.3.0', isset( $manifest['version'] ) && '1.3.0' === $manifest['version'] );
+w2t_assert( 'manifest schema_version >= 1.3', isset( $manifest['schema_version'] ) && version_compare( (string) $manifest['schema_version'], '1.3', '>=' ) );
+w2t_assert( 'manifest version >= 1.3.0', isset( $manifest['version'] ) && version_compare( (string) $manifest['version'], '1.3.0', '>=' ) );
 w2t_assert( 'manifest capabilities.menus = true', ! empty( $manifest['capabilities']['menus'] ) );
 w2t_assert( 'manifest counts.menus present', isset( $manifest['counts']['menus'] ) && $manifest['counts']['menus'] >= 1 );
 w2t_assert( 'manifest still advertises lookup', ! empty( $manifest['lookup']['supported'] ) );

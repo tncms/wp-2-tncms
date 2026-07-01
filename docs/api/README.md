@@ -7,7 +7,7 @@ REST namespace:
 ```
 
 `api_version` is `v1` and is stable for the plugin lifetime. The manifest
-`schema_version` is `1.3`.
+`schema_version` is `1.3.1`.
 
 Protected endpoints require bearer authentication:
 
@@ -29,6 +29,68 @@ Authorization: Bearer YOUR_TOKEN
 | GET | `/pages` `/pages/{id}` | Collection + single. |
 | GET | `/menus` `/menus/{id}` | Collection (summaries) + single (full item tree). |
 | GET | `/dependencies` | Dependency map. |
+
+## Embedded featured image (v1.3.1, additive)
+
+Post and page payloads expose the featured image two ways:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `featured_media` | integer | The featured attachment ID. `0` when none. Unchanged since v1.0 — kept for backward compatibility. |
+| `featured_image` | object \| null | The full featured attachment, or `null` when the post has none. |
+
+`featured_image` is the exact object returned by `/media/{id}` — it is produced
+by the same `MediaTransformer`, so it carries `id`, the original `url`,
+`relative_path`, `mime_type`, `dimensions`, `filesize`, `checksum`, `alt_text`,
+`caption`, `description`, the `storage` block, `source` identity and dedup
+`hashes`. Only the original upload is described; generated thumbnail sizes are
+never exposed and URLs are never rewritten.
+
+**Clients should prefer `featured_image`** — it removes the extra `/media/{id}`
+round trip (no N+1). Fall back to `featured_media` (the ID) only when talking to
+a pre-1.3.1 exporter or when you deliberately want just the ID. When
+`featured_media` is `0`, `featured_image` is `null`.
+
+```jsonc
+{
+  "data": {
+    "id": 123,
+    "type": "post",
+    "featured_media": 456,
+    "featured_image": {
+      "id": 456,
+      "url": "https://example.com/wp-content/uploads/2026/07/hero.jpg",
+      "relative_path": "2026/07/hero.jpg",
+      "mime_type": "image/jpeg",
+      "dimensions": { "width": 1200, "height": 800 },
+      "filesize": 234512,
+      "checksum": "9f86d0818820...b0f00a08",
+      "alt_text": "Sunrise over the bay",
+      "caption": "",
+      "description": "",
+      "storage": {
+        "target_public_path": "uploads/2026/07/hero.jpg",
+        "checksum": { "algorithm": "sha256", "value": "9f86d0818820...b0f00a08" }
+      },
+      "source": {
+        "system": "wordpress",
+        "resource": "media",
+        "id": 456,
+        "key": "wordpress:media:456"
+      }
+    }
+    // ...remaining post fields unchanged...
+  }
+}
+```
+
+A post without a featured image:
+
+```jsonc
+{ "data": { "id": 124, "featured_media": 0, "featured_image": null } }
+```
+
+The manifest advertises support via `capabilities.embedded_featured_image: true`.
 
 ## Resource Lookup API (v1.2, additive)
 

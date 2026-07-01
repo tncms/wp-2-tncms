@@ -83,6 +83,8 @@ abstract class PostTypeController extends AbstractController {
 			$filters
 		);
 
+		$this->prime_featured_images( $result['items'] );
+
 		$fields = $filters['fields'];
 		$items  = array();
 
@@ -99,6 +101,35 @@ abstract class PostTypeController extends AbstractController {
 		}
 
 		return $this->paginated( $items, $result['total'], $request );
+	}
+
+	/**
+	 * Prime the featured attachment post + meta caches for a page of results.
+	 *
+	 * The parent post meta cache is already warmed by the query, so the
+	 * `_thumbnail_id` values are read without extra queries; the referenced
+	 * attachments are then loaded in a single batch so embedding each
+	 * `featured_image` stays a cache hit instead of an N+1 lookup per post.
+	 *
+	 * @param WP_Post[] $posts Posts in the current page.
+	 * @return void
+	 */
+	private function prime_featured_images( array $posts ) {
+		$attachment_ids = array();
+
+		foreach ( $posts as $post ) {
+			$thumbnail_id = (int) get_post_thumbnail_id( $post->ID );
+
+			if ( $thumbnail_id > 0 ) {
+				$attachment_ids[] = $thumbnail_id;
+			}
+		}
+
+		$attachment_ids = array_values( array_unique( $attachment_ids ) );
+
+		if ( ! empty( $attachment_ids ) ) {
+			_prime_post_caches( $attachment_ids, false, true );
+		}
 	}
 
 	/**
